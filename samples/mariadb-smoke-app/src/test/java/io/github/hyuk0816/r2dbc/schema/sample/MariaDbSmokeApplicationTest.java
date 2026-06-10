@@ -45,6 +45,7 @@ class MariaDbSmokeApplicationTest {
 
         assertThat(tableExists(databaseClient, "sample_group")).isTrue();
         assertThat(tableExists(databaseClient, "sample_user")).isTrue();
+        assertThat(tableExists(databaseClient, "unannotated_record")).isFalse();
         assertThat(indexExists(databaseClient, "sample_user", "idx_sample_user_email", false)).isTrue();
         assertThat(indexExists(databaseClient, "sample_user", "uk_sample_user_email", true)).isTrue();
         assertThat(foreignKeyExists(databaseClient)).isTrue();

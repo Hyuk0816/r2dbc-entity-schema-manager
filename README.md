@@ -44,7 +44,7 @@ r2dbc-entity-schema-manager
 
 - Spring Data R2DBC entity scan
 - `@Table`, `@Column`, `@Id` metadata 사용
-- `@Table`이 붙은 타입 또는 Spring Data repository domain type만 schema 관리 대상으로 사용
+- `@Table`이 붙은 타입만 schema 관리 대상으로 사용
 - 신규 테이블 생성
 - 신규 컬럼 추가
 - 기존 컬럼 타입 차이 감지 및 옵션 기반 변경
@@ -66,7 +66,7 @@ r2dbc-entity-schema-manager
 - 컬럼 rename 자동 적용
 - 복합 foreign key
 - FK `ON DELETE`, `ON UPDATE` 옵션
-- DTO/value object 전체 자동 스캔
+- `@Table`이 없는 DTO/value object/repository domain type 자동 스캔
 
 ## 로컬에서 사용하기
 

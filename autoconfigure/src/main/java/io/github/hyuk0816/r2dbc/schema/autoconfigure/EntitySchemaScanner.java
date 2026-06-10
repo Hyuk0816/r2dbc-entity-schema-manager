@@ -61,15 +61,12 @@ public final class EntitySchemaScanner {
     private List<RelationalPersistentEntity<?>> persistentEntities() {
         Map<Class<?>, RelationalPersistentEntity<?>> entities = new LinkedHashMap<>();
         Set<Class<?>> repositoryDomainTypes = repositoryDomainTypes();
-        for (RelationalPersistentEntity<?> entity : mappingContext.getPersistentEntities()) {
-            if (isSchemaManagedType(entity.getType(), repositoryDomainTypes)) {
-                entities.put(entity.getType(), entity);
-            }
-        }
         for (Class<?> domainType : repositoryDomainTypes) {
-            RelationalPersistentEntity<?> entity = mappingContext.getPersistentEntity(domainType);
-            if (entity != null) {
-                entities.putIfAbsent(entity.getType(), entity);
+            mappingContext.getPersistentEntity(domainType);
+        }
+        for (RelationalPersistentEntity<?> entity : mappingContext.getPersistentEntities()) {
+            if (isSchemaManagedType(entity.getType())) {
+                entities.put(entity.getType(), entity);
             }
         }
         return List.copyOf(entities.values());
@@ -86,9 +83,8 @@ public final class EntitySchemaScanner {
         return domainTypes;
     }
 
-    private static boolean isSchemaManagedType(Class<?> type, Set<Class<?>> repositoryDomainTypes) {
-        return repositoryDomainTypes.contains(type)
-                || hasAnnotation(type, "org.springframework.data.relational.core.mapping.Table")
+    private static boolean isSchemaManagedType(Class<?> type) {
+        return hasAnnotation(type, "org.springframework.data.relational.core.mapping.Table")
                 || hasAnnotation(type, "jakarta.persistence.Table")
                 || hasAnnotation(type, "javax.persistence.Table");
     }

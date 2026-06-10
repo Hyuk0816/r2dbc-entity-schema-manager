@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EntitySchemaScannerTest {
 
     @Test
-    void ignoresMappingContextTypesThatAreNotTablesOrRepositoryDomains() {
+    void ignoresMappingContextTypesThatAreNotAnnotatedAsTables() {
         RelationalMappingContext mappingContext = new RelationalMappingContext();
         mappingContext.setInitialEntitySet(Set.of(AccountTable.class, PkiCertValueDto.class));
         mappingContext.afterPropertiesSet();

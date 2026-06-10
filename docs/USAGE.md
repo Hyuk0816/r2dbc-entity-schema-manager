@@ -19,8 +19,9 @@ management at application startup.
 - Gradle Kotlin DSL examples
 
 The scanner manages Spring Data table types, not every class in the mapping context. A type is
-treated as schema-managed when it is annotated with `@Table` or when it is the domain type of a
-Spring Data repository. DTOs and value objects are ignored.
+treated as schema-managed only when it is annotated with `@Table`. Being the domain type of a
+Spring Data repository is not enough by itself. DTOs, value objects, and unannotated repository
+domain types are ignored.
 
 ## Installation
 
