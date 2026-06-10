@@ -14,7 +14,7 @@ public class R2dbcSchemaManagerProperties {
     private Dialect dialect = Dialect.MARIADB;
     private String schema;
     private NameCaseOption nameCase = NameCaseOption.SPRING;
-    private boolean syncExistingColumnTypes = true;
+    private boolean syncExistingColumnTypes;
     private boolean applyIndexes = true;
     private boolean applyUniqueIndexes = true;
     private boolean applyForeignKeys;

@@ -119,6 +119,31 @@ class R2dbcSchemaManagerMariaDbIntegrationTest {
     }
 
     @Test
+    void applyModeDoesNotModifyExistingColumnTypesByDefault() {
+        DatabaseClient databaseClient = DatabaseClient.create(connectionFactory());
+        execute(databaseClient, "DROP TABLE IF EXISTS `inferred_type_account`;");
+        execute(databaseClient, """
+                CREATE TABLE `inferred_type_account` (
+                    `id` bigint NOT NULL,
+                    `description` varchar(1000),
+                    PRIMARY KEY (`id`)
+                );""");
+
+        contextRunner(InferredTypeAccount.class)
+                .withPropertyValues(
+                        "r2dbc-schema-manager.enabled=true",
+                        "r2dbc-schema-manager.mode=apply",
+                        "r2dbc-schema-manager.execution-timeout=30s"
+                )
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(column(databaseClient, "inferred_type_account", "description"))
+                            .containsEntry("data_type", "varchar")
+                            .containsEntry("character_maximum_length", 1000L);
+                });
+    }
+
+    @Test
     void dryRunModeReportsSqlWithoutChangingMariaDbSchema() {
         DatabaseClient databaseClient = DatabaseClient.create(connectionFactory());
         execute(databaseClient, "DROP TABLE IF EXISTS `dry_run_account`;");
@@ -359,6 +384,15 @@ class R2dbcSchemaManagerMariaDbIntegrationTest {
 
         @Id
         Long id;
+    }
+
+    @Table("inferred_type_account")
+    static final class InferredTypeAccount {
+
+        @Id
+        Long id;
+
+        String description;
     }
 
     @Table("validate_account")

@@ -49,6 +49,7 @@ r2dbc-schema-manager:
   enabled: true
   mode: dry-run
   dialect: mariadb
+  sync-existing-column-types: false
   apply-foreign-keys: false
 ```
 
@@ -326,6 +327,13 @@ This is applyable only when:
 r2dbc-schema-manager:
   sync-existing-column-types: true
 ```
+
+The default is `false`.
+
+If an existing database column is `varchar(1000)` and the entity only has an unannotated
+`String` field, the inferred type can be `varchar(255)`. For that reason, existing column
+type synchronization is disabled by default. Prefer explicit `@DdlColumn(type = "varchar",
+length = 200)` metadata and verify against a disposable database before enabling this option.
 
 Generated SQL:
 

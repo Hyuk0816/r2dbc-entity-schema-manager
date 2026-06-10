@@ -23,6 +23,18 @@ class DiffPolicyEvaluatorTest {
     }
 
     @Test
+    void appliesExistingColumnTypeChangesOnlyWhenExplicitlyEnabled() {
+        SchemaDiff diff = new SchemaDiff(SchemaDiffType.MODIFY_COLUMN_TYPE, "user_master", "user_name", "");
+
+        assertThat(evaluator.evaluate(diff, SchemaApplyOptions.defaults()).action())
+                .isEqualTo(DiffAction.REPORT_ONLY);
+
+        SchemaApplyOptions enabled = new SchemaApplyOptions(true, true, true, false, false);
+        assertThat(evaluator.evaluate(diff, enabled).action())
+                .isEqualTo(DiffAction.APPLY);
+    }
+
+    @Test
     void appliesConfiguredSafeDiffsAndReportsUnsafeDiffs() {
         SchemaApplyOptions defaults = SchemaApplyOptions.defaults();
 
@@ -30,7 +42,7 @@ class DiffPolicyEvaluatorTest {
         assertThat(evaluator.evaluate(diff(SchemaDiffType.ADD_COLUMN), defaults).action()).isEqualTo(DiffAction.APPLY);
         assertThat(evaluator.evaluate(diff(SchemaDiffType.ADD_INDEX), defaults).action()).isEqualTo(DiffAction.APPLY);
         assertThat(evaluator.evaluate(diff(SchemaDiffType.ADD_UNIQUE_KEY), defaults).action()).isEqualTo(DiffAction.APPLY);
-        assertThat(evaluator.evaluate(diff(SchemaDiffType.MODIFY_COLUMN_TYPE), defaults).action()).isEqualTo(DiffAction.APPLY);
+        assertThat(evaluator.evaluate(diff(SchemaDiffType.MODIFY_COLUMN_TYPE), defaults).action()).isEqualTo(DiffAction.REPORT_ONLY);
         assertThat(evaluator.evaluate(diff(SchemaDiffType.EXTRA_COLUMN), defaults).action()).isEqualTo(DiffAction.REPORT_ONLY);
         assertThat(evaluator.evaluate(diff(SchemaDiffType.PRIMARY_KEY_MISMATCH), defaults).action()).isEqualTo(DiffAction.REPORT_ONLY);
     }

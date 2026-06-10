@@ -9,6 +9,6 @@ public record SchemaApplyOptions(
 ) {
 
     public static SchemaApplyOptions defaults() {
-        return new SchemaApplyOptions(true, true, true, false, false);
+        return new SchemaApplyOptions(false, true, true, false, false);
     }
 }

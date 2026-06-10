@@ -99,6 +99,7 @@ r2dbc-schema-manager:
   enabled: true
   mode: dry-run
   dialect: mariadb
+  sync-existing-column-types: false
   apply-foreign-keys: false
 ```
 
@@ -348,7 +349,9 @@ r2dbc-schema-manager:
   sync-existing-column-types: true
 ```
 
-일 때만 적용 대상입니다.
+일 때만 적용 대상입니다. 기본값은 `false`입니다.
+
+기존 DB 컬럼이 `varchar(1000)`인데 엔티티에 길이를 명시하지 않은 `String` 필드가 있으면, 라이브러리는 기본 추론 타입으로 `varchar(255)`를 계산할 수 있습니다. 그래서 기존 컬럼 타입 동기화는 기본으로 꺼져 있고, 정말 필요한 컬럼에 `@DdlColumn(type = "varchar", length = 200)`처럼 명시한 뒤 별도 DB에서 먼저 검증하는 것을 권장합니다.
 
 생성 예시:
 
