@@ -21,8 +21,7 @@ dependencies {
 위 좌표를 실제 프로젝트에서 쓰려면 다음 중 하나가 필요합니다.
 
 1. 로컬 개발: `publishToMavenLocal` 후 `mavenLocal()` 사용
-2. GitHub Packages 배포: GitHub Packages Maven repository와 인증 정보 추가
-3. Maven Central 배포: Sonatype Central Portal 설정, signing, namespace 검증 후 배포
+2. Maven Central 배포: Sonatype Central Portal 설정, signing, namespace 검증 후 배포
 
 `org.mariadb:r2dbc-mariadb:1.4.0` 같은 의존성은 Maven Central에 이미 올라와 있기 때문에 `mavenCentral()`만으로 받을 수 있습니다. 반면 이 라이브러리는 아직 Maven Central에 없으므로 같은 방식으로는 받을 수 없습니다.
 
@@ -90,31 +89,6 @@ dependencies {
 ```
 
 `runtimeOnly("org.mariadb:r2dbc-mariadb:1.4.0")`는 MariaDB R2DBC driver입니다. 이 라이브러리와 별개로 애플리케이션이 MariaDB에 R2DBC로 연결하려면 필요합니다.
-
-## GitHub Packages에서 사용하기
-
-GitHub Packages에 publish한 뒤에는 consumer 프로젝트에 repository를 추가해야 합니다.
-
-```kotlin
-repositories {
-    mavenCentral()
-
-    maven {
-        url = uri("https://maven.pkg.github.com/Hyuk0816/r2dbc-entity-schema-manager")
-        credentials {
-            username = findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-            password = findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-        }
-    }
-}
-
-dependencies {
-    implementation("io.github.hyuk0816:r2dbc-entity-schema-manager-spring-boot-starter:0.1.0-SNAPSHOT")
-    runtimeOnly("org.mariadb:r2dbc-mariadb:1.4.0")
-}
-```
-
-GitHub Packages는 Maven-compatible repository이지만 Maven Central은 아닙니다. 공개 라이브러리처럼 `mavenCentral()`만으로 받게 하려면 Maven Central 배포가 따로 필요합니다.
 
 ## 기본 설정
 
@@ -415,13 +389,10 @@ COMMENT_MISMATCH
 
 샘플은 Maven Local에 배포된 starter artifact를 실제 Spring Boot 앱에서 소비하고, MariaDB Testcontainer를 띄워 테이블, index, unique index, foreign key 생성을 검증합니다.
 
-## GitHub Actions와 배포
+## GitHub Actions
 
-현재 workflow는 두 개입니다.
+현재 CI workflow가 있습니다.
 
 - `.github/workflows/ci.yml`: push/PR 시 테스트 실행
-- `.github/workflows/publish-github-packages.yml`: release published 또는 수동 실행 시 GitHub Packages에 publish
 
-GitHub Packages에 올라가면 GitHub Maven repository를 추가한 프로젝트에서는 받을 수 있습니다.
-
-Maven Central에 올라가는 것은 별도 절차가 필요합니다.
+Maven Central 자동 배포 workflow는 아직 설정되어 있지 않습니다.

@@ -40,21 +40,6 @@ dependencies {
 }
 ```
 
-If you consume from GitHub Packages, add the GitHub Maven repository:
-
-```kotlin
-repositories {
-    mavenCentral()
-    maven {
-        url = uri("https://maven.pkg.github.com/Hyuk0816/r2dbc-entity-schema-manager")
-        credentials {
-            username = findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-            password = findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-        }
-    }
-}
-```
-
 ## Basic Configuration
 
 The manager is disabled by default. Enable it explicitly:
@@ -451,24 +436,9 @@ r2dbc-schema-manager:
 
 Never enable `apply` first against a shared development or production DB.
 
-## GitHub Packages Publishing
+## Maven Central Publishing
 
-This repository includes a GitHub Actions workflow that can publish artifacts to GitHub Packages.
-That is a Maven-compatible repository, but it is not Maven Central.
+This project is not published to Maven Central yet.
 
-Consumers use:
-
-```kotlin
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/Hyuk0816/r2dbc-entity-schema-manager")
-        credentials {
-            username = System.getenv("GITHUB_ACTOR")
-            password = System.getenv("GITHUB_TOKEN")
-        }
-    }
-}
-```
-
-Publishing to Maven Central requires a separate Sonatype Central Portal setup, artifact signing,
+Publishing to Maven Central requires Sonatype Central Portal setup, artifact signing,
 namespace verification, and release credentials.
