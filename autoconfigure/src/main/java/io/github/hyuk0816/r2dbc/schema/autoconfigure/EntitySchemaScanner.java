@@ -20,8 +20,10 @@ import org.springframework.data.repository.support.Repositories;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class EntitySchemaScanner {
 
@@ -58,19 +60,46 @@ public final class EntitySchemaScanner {
 
     private List<RelationalPersistentEntity<?>> persistentEntities() {
         Map<Class<?>, RelationalPersistentEntity<?>> entities = new LinkedHashMap<>();
+        Set<Class<?>> repositoryDomainTypes = repositoryDomainTypes();
         for (RelationalPersistentEntity<?> entity : mappingContext.getPersistentEntities()) {
-            entities.put(entity.getType(), entity);
+            if (isSchemaManagedType(entity.getType(), repositoryDomainTypes)) {
+                entities.put(entity.getType(), entity);
+            }
         }
-        if (beanFactory != null) {
-            Repositories repositories = new Repositories(beanFactory);
-            for (Class<?> domainType : repositories) {
-                RelationalPersistentEntity<?> entity = mappingContext.getPersistentEntity(domainType);
-                if (entity != null) {
-                    entities.putIfAbsent(entity.getType(), entity);
-                }
+        for (Class<?> domainType : repositoryDomainTypes) {
+            RelationalPersistentEntity<?> entity = mappingContext.getPersistentEntity(domainType);
+            if (entity != null) {
+                entities.putIfAbsent(entity.getType(), entity);
             }
         }
         return List.copyOf(entities.values());
+    }
+
+    private Set<Class<?>> repositoryDomainTypes() {
+        Set<Class<?>> domainTypes = new LinkedHashSet<>();
+        if (beanFactory != null) {
+            Repositories repositories = new Repositories(beanFactory);
+            for (Class<?> domainType : repositories) {
+                domainTypes.add(domainType);
+            }
+        }
+        return domainTypes;
+    }
+
+    private static boolean isSchemaManagedType(Class<?> type, Set<Class<?>> repositoryDomainTypes) {
+        return repositoryDomainTypes.contains(type)
+                || hasAnnotation(type, "org.springframework.data.relational.core.mapping.Table")
+                || hasAnnotation(type, "jakarta.persistence.Table")
+                || hasAnnotation(type, "javax.persistence.Table");
+    }
+
+    private static boolean hasAnnotation(Class<?> type, String annotationName) {
+        for (java.lang.annotation.Annotation annotation : type.getDeclaredAnnotations()) {
+            if (annotation.annotationType().getName().equals(annotationName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private TableDefinition scanEntity(RelationalPersistentEntity<?> entity) {

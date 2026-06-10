@@ -18,6 +18,10 @@ management at application startup.
 - MariaDB
 - Gradle Kotlin DSL examples
 
+The scanner manages Spring Data table types, not every class in the mapping context. A type is
+treated as schema-managed when it is annotated with `@Table` or when it is the domain type of a
+Spring Data repository. DTOs and value objects are ignored.
+
 ## Installation
 
 For local development, publish the library first:
