@@ -20,6 +20,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -69,6 +70,32 @@ class R2dbcSchemaManagerMariaDbIntegrationTest {
                             "group_master",
                             "id"
                     )).isTrue();
+                });
+    }
+
+    @Test
+    void applyModeCreatesCompositeTypeIndexesAndUsesDdlColumnLengthWithInferredType() {
+        DatabaseClient databaseClient = DatabaseClient.create(connectionFactory());
+        execute(databaseClient, "DROP TABLE IF EXISTS `r2dbc_entity_test`;");
+
+        contextRunner(TestTable.class)
+                .withPropertyValues(
+                        "r2dbc-schema-manager.enabled=true",
+                        "r2dbc-schema-manager.mode=apply",
+                        "r2dbc-schema-manager.execution-timeout=30s"
+                )
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(tableExists(databaseClient, "r2dbc_entity_test")).isTrue();
+                    assertThat(column(databaseClient, "r2dbc_entity_test", "description"))
+                            .containsEntry("data_type", "varchar")
+                            .containsEntry("character_maximum_length", 500L);
+                    assertThat(indexColumns(databaseClient, "r2dbc_entity_test", "idx_test"))
+                            .containsExactly("name", "description");
+                    assertThat(indexColumns(databaseClient, "r2dbc_entity_test", "uk_test"))
+                            .containsExactly("name", "description");
+                    assertThat(indexExists(databaseClient, "r2dbc_entity_test", "idx_test", false)).isTrue();
+                    assertThat(indexExists(databaseClient, "r2dbc_entity_test", "uk_test", true)).isTrue();
                 });
     }
 
@@ -226,6 +253,23 @@ class R2dbcSchemaManagerMariaDbIntegrationTest {
         return count != null && count >= 1L;
     }
 
+    private static List<String> indexColumns(DatabaseClient databaseClient, String tableName, String indexName) {
+        return databaseClient.sql("""
+                        SELECT column_name
+                        FROM information_schema.statistics
+                        WHERE table_schema = DATABASE()
+                          AND table_name = :tableName
+                          AND index_name = :indexName
+                        ORDER BY seq_in_index
+                        """)
+                .bind("tableName", tableName)
+                .bind("indexName", indexName)
+                .map((row, metadata) -> row.get("column_name", String.class))
+                .all()
+                .collectList()
+                .block(Duration.ofSeconds(10));
+    }
+
     private static boolean foreignKeyExists(
             DatabaseClient databaseClient,
             String tableName,
@@ -282,6 +326,22 @@ class R2dbcSchemaManagerMariaDbIntegrationTest {
                 referencedColumn = "id"
         )
         Long groupId;
+    }
+
+    @Table("r2dbc_entity_test")
+    @DdlIndex(name = "idx_test", columns = {"name", "description"})
+    @DdlUnique(name = "uk_test", columns = {"name", "description"})
+    static final class TestTable {
+
+        @Id
+        String id;
+
+        String name;
+
+        @DdlColumn(name = "description", length = 500)
+        String description;
+
+        String test;
     }
 
     @Table("legacy_account")

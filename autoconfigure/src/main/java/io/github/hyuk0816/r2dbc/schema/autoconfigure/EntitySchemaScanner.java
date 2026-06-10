@@ -125,16 +125,27 @@ public final class EntitySchemaScanner {
     }
 
     private String resolveColumnType(RelationalPersistentProperty property, DdlColumn ddlColumn) {
-        if (ddlColumn == null || ddlColumn.type().isBlank()) {
-            return typeMapper.map(property.getActualType());
+        String type = ddlColumn == null || ddlColumn.type().isBlank()
+                ? typeMapper.map(property.getActualType())
+                : ddlColumn.type();
+        if (ddlColumn == null) {
+            return type;
         }
         if (ddlColumn.length() > -1) {
-            return ddlColumn.type() + "(" + ddlColumn.length() + ")";
+            return typeWithoutArguments(type) + "(" + ddlColumn.length() + ")";
         }
         if (ddlColumn.precision() > -1 && ddlColumn.scale() > -1) {
-            return ddlColumn.type() + "(" + ddlColumn.precision() + "," + ddlColumn.scale() + ")";
+            return typeWithoutArguments(type) + "(" + ddlColumn.precision() + "," + ddlColumn.scale() + ")";
         }
-        return ddlColumn.type();
+        return type;
+    }
+
+    private static String typeWithoutArguments(String type) {
+        int argumentsStart = type.indexOf('(');
+        if (argumentsStart == -1) {
+            return type;
+        }
+        return type.substring(0, argumentsStart);
     }
 
     private boolean resolveNullable(RelationalPersistentProperty property, DdlColumn ddlColumn) {
